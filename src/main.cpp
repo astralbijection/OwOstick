@@ -12,10 +12,10 @@ void set_motor(int level) { analogWrite(PIN_MOTOR, level); }
 
 void setup() {
     Serial.begin(9600);
+
+    Serial.println("Initializing...");
+
     bt.begin(38400);
-
-    Serial.println("Starting");
-
     pinMode(PIN_BT_EN, OUTPUT);
     pinMode(PIN_BT_STATE, INPUT);
     pinMode(PIN_LED, OUTPUT);
@@ -23,7 +23,7 @@ void setup() {
 
     set_motor(0);
     digitalWrite(PIN_BT_EN, 0);
-    digitalWrite(PIN_LED, 1);
+    digitalWrite(PIN_LED, 0);
 
     {
         HC05_ATMode at(&bt, PIN_BT_EN, PIN_BT_STATE);
@@ -33,14 +33,29 @@ void setup() {
         at.set_role(HC05_Role_Slave);
     }
 
-    set_motor(1023);
+    Serial.println("Ready to accept connections");
 }
 
 void loop() {
     while (!is_connected()) {
         delay(500);
     }
-    bt.println("OK");
+    Serial.println("Successfully connected");
+    bt.println("READY");
+
     while (is_connected()) {
+        digitalWrite(PIN_LED, 1);
+        auto s = bt.readStringUntil('\n');
+        digitalWrite(PIN_LED, 0);
+        if (s.length() > 0) {
+            Serial.print("Received command: ");
+            Serial.println(s);
+            auto power = int(1023 * constrain(s.toFloat(), 0.0, 1.0));
+            set_motor(power);
+            bt.println("OK");
+        }
     }
+
+    digitalWrite(PIN_LED, 0);
+    Serial.println("Disconnected");
 }
