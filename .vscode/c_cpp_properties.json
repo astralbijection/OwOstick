@@ -1,0 +1,57 @@
+{
+    "configurations": [
+        {
+            "name": "!!! WARNING !!! AUTO-GENERATED FILE, PLEASE DO NOT MODIFY IT AND USE https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags"
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "/home/astrid/Programming/plenglin/OwOstick/include",
+                "/home/astrid/Programming/plenglin/OwOstick/src",
+                "/home/astrid/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                "/home/astrid/.platformio/packages/framework-arduino-avr/cores/arduino",
+                "/home/astrid/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
+                "/home/astrid/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                "/home/astrid/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                "/home/astrid/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "/home/astrid/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                "/home/astrid/.platformio/packages/tool-unity",
+                ""
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "/home/astrid/Programming/plenglin/OwOstick/include",
+                    "/home/astrid/Programming/plenglin/OwOstick/src",
+                    "/home/astrid/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                    "/home/astrid/.platformio/packages/framework-arduino-avr/cores/arduino",
+                    "/home/astrid/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
+                    "/home/astrid/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                    "/home/astrid/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                    "/home/astrid/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "/home/astrid/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                    "/home/astrid/.platformio/packages/tool-unity",
+                    ""
+                ]
+            },
+            "defines": [
+                "PLATFORMIO=50003",
+                "ARDUINO_AVR_PRO",
+                "F_CPU=16000000L",
+                "ARDUINO_ARCH_AVR",
+                "ARDUINO=10808",
+                "__AVR_ATmega328P__",
+                ""
+            ],
+            "intelliSenseMode": "gcc-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "compilerPath": "/home/astrid/.platformio/packages/toolchain-atmelavr/bin/avr-gcc",
+            "compilerArgs": [
+                "-mmcu=atmega328p",
+                ""
+            ]
+        }
+    ],
+    "version": 4
+}
