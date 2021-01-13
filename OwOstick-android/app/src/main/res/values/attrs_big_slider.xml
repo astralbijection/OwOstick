@@ -1,0 +1,5 @@
+<resources>
+    <declare-styleable name="BigSlider">
+        <attr name="value" format="float" />
+    </declare-styleable>
+</resources>
