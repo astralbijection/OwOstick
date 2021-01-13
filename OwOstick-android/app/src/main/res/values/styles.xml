@@ -1,6 +1,5 @@
 <resources>
 
-    <style name="Widget.Theme.OwOstick.MyView" parent="">
-        <item name="android:background">@color/gray_400</item>
+    <style name="Widget.Theme.OwOstick.MyView" parent="Theme.AppCompat.DayNight">
     </style>
 </resources>
