@@ -1,5 +1,4 @@
 <resources>
 
-    <style name="Widget.Theme.OwOstick.MyView" parent="Theme.AppCompat.DayNight">
-    </style>
+    <style name="Widget.Theme.OwOstick.MyView" parent="Theme.AppCompat.DayNight"></style>
 </resources>

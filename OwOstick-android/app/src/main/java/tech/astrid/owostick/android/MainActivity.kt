@@ -28,15 +28,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
-        pairedDevices?.forEach { device ->
-            val deviceName = device.name
-            val deviceHardwareAddress = device.address // MAC address
-        }
-        val devices = pairedDevices?.map {
-            it.name
-        }?.toTypedArray()!!
+        val devices: List<DeviceConnector> = pairedDevices?.map { it -> BluetoothDeviceConnector(it) as DeviceConnector }!!
 
-        val arrayAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, devices)
+        val arrayAdapter = DeviceAdapter(this, devices)
         deviceList.adapter = arrayAdapter
     }
 }
