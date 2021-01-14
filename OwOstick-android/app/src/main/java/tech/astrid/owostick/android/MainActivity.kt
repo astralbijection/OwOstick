@@ -11,6 +11,7 @@ import com.jakewharton.rxbinding4.view.clicks
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
+import java.lang.IllegalStateException
 
 class MainActivity : AppCompatActivity() {
     private val tag = javaClass.name
@@ -19,19 +20,29 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        connectButton.clicks()
-            .filter { state.value == ConnectingState.Disconnected }
-            .subscribe {
-                val connector = deviceList.selectedItem as DeviceConnector
-                Log.i(tag, "Connecting")
+        connectButton.setOnClickListener {
+            when (val stateObj = state.value) {
+                is ConnectingState.Disconnected -> {
+                    val connector = deviceList.selectedItem as DeviceConnector
+                    Log.i(tag, "Connecting")
 
-                state.onNext(ConnectingState.Connecting(connector))
+                    state.onNext(ConnectingState.Connecting(connector))
 
-                lifecycleScope.launch(Dispatchers.IO) {
-                    state.onNext(ConnectingState.Connected(connector.connect()))
-                    Log.i(tag, "Connected")
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        state.onNext(ConnectingState.Connected(connector.connect()))
+                        Log.i(tag, "Connected")
+                    }
+                }
+                is ConnectingState.Connected -> {
+                    stateObj.connection.sendValue(0.0f)
+                    stateObj.connection.close()
+                    state.onNext(ConnectingState.Disconnected)
+                }
+                is ConnectingState.Connecting -> {
+                    throw IllegalStateException("Button cannot be clicked while still connecting!")
                 }
             }
+        }
 
         powerSlider.valueSubject
             .subscribe {
