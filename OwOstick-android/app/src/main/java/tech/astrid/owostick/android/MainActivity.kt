@@ -33,6 +33,13 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
+        powerSlider.valueSubject
+            .subscribe {
+                when (val state = state.value) {
+                    is ConnectingState.Connected -> state.connection.sendValue(it)
+                }
+            }
+
         state.subscribe {
             runOnUiThread {
                 deviceList.isEnabled = it is ConnectingState.Disconnected
