@@ -57,17 +57,17 @@ class BigSlider : View {
         val height = height.toFloat()
 
         canvas.drawColor(Color.BLACK)
-        canvas.drawRect(0f, value * height, width, height, paint)
+        canvas.drawRect(0f, (1 - value) * height, width, height, paint)
     }
 
     override fun onDragEvent(event: DragEvent?): Boolean {
-        value = event!!.y / height.toFloat()
+        value = 1 - event!!.y / height.toFloat()
         invalidate()
         return true
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        value = event!!.y / height.toFloat()
+        value = 1 - event!!.y / height.toFloat()
         invalidate()
         return true
     }

@@ -15,6 +15,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        connectButton.setOnClickListener {
+            doConnect()
+        }
     }
 
     override fun onStart() {
@@ -33,4 +37,14 @@ class MainActivity : AppCompatActivity() {
         val arrayAdapter = DeviceAdapter(this, devices)
         deviceList.adapter = arrayAdapter
     }
+
+    private fun doConnect() {
+        val item = deviceList.selectedItem as DeviceConnector
+        deviceList.isEnabled = false
+        connectButton.isEnabled = false
+        connection = item.connect()
+        connectButton.isEnabled = true
+    }
+
+    var connection: DeviceConnection? = null
 }
