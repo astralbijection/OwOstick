@@ -1,5 +1,5 @@
 [package]
-name = "OwOstick-server"
+name = "owostick-server"
 version = "0.1.0"
 authors = ["Astrid Yu <astrid@astrid.tech>"]
 edition = "2018"
