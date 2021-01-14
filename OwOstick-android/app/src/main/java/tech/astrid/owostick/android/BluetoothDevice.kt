@@ -3,7 +3,6 @@ package tech.astrid.owostick.android
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.util.Log
-import org.slf4j.LoggerFactory
 import java.net.ProtocolException
 import java.util.*
 

@@ -8,6 +8,7 @@ import android.util.AttributeSet
 import android.view.DragEvent
 import android.view.MotionEvent
 import android.view.View
+import io.reactivex.rxjava3.subjects.BehaviorSubject
 import tech.astrid.owostick.android.R
 
 /**
@@ -15,17 +16,13 @@ import tech.astrid.owostick.android.R
  */
 class BigSlider : View {
 
-    private var _value: Float = 0f
-
-    /**
-     * In the example view, this dimension is the font size.
-     */
     var value: Float
-        get() = _value
+        get() = valueSubject.value
         set(value) {
-            _value = value
-            invalidate()
+            valueSubject.onNext(value)
         }
+
+    val valueSubject = BehaviorSubject.createDefault(0.0f)
 
     constructor(context: Context) : super(context) {
         init(null, 0)
@@ -43,8 +40,10 @@ class BigSlider : View {
         // Load attributes
         context.obtainStyledAttributes(attrs, R.styleable.BigSlider, defStyle, 0)
                 .apply {
-                    _value = getFloat(R.styleable.BigSlider_value, 0f)
+                    value = getFloat(R.styleable.BigSlider_value, 0f)
                 }.recycle()
+
+        valueSubject.subscribe { invalidate() }
     }
 
     private val paint = Paint(0).apply {
@@ -60,15 +59,17 @@ class BigSlider : View {
         canvas.drawRect(0f, (1 - value) * height, width, height, paint)
     }
 
+    private fun yToValue(y: Float): Float {
+        return 1 - y / height.toFloat()
+    }
+
     override fun onDragEvent(event: DragEvent?): Boolean {
-        value = 1 - event!!.y / height.toFloat()
-        invalidate()
+        value = yToValue(event!!.y)
         return true
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        value = 1 - event!!.y / height.toFloat()
-        invalidate()
+        value = yToValue(event!!.y)
         return true
     }
 }
