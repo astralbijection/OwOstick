@@ -1,5 +1,6 @@
 package tech.astrid.owostick.android.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -60,15 +61,18 @@ class BigSlider : View {
     }
 
     private fun yToValue(y: Float): Float {
-        return 1 - y / height.toFloat()
+        return (1 - y / height.toFloat()).coerceIn(0f, 1f)
     }
 
     override fun onDragEvent(event: DragEvent?): Boolean {
+        super.onDragEvent(event)
         value = yToValue(event!!.y)
         return true
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
+        super.onTouchEvent(event)
         value = yToValue(event!!.y)
         return true
     }

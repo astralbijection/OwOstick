@@ -34,7 +34,7 @@ class BluetoothDeviceConnection(private val socket: BluetoothSocket) : DeviceCon
     }
 
     override fun sendValue(value: Float) {
-        send(value.toString())
+        send((value * 0.25f).toString())  // TODO fix arduino code
         expect("OK")
     }
 
