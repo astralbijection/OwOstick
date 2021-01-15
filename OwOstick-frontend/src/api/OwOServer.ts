@@ -71,6 +71,7 @@ export class OwOServer {
 
     this.inputPower$ = new Subject();
     const inputMessages$ = this.inputPower$.pipe(
+      distinctUntilChanged(),
       throttleTime(100),
       map(
         (power) =>
