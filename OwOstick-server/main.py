@@ -1,3 +1,5 @@
+from typing import Optional
+
 import tornado
 import tornado.websocket
 import json
@@ -5,8 +7,6 @@ import logging
 
 
 logger = logging.getLogger(__name__)
-controller = None
-device = None
 
 
 class ControllerHandler(tornado.websocket.WebSocketHandler):
@@ -18,6 +18,9 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
             self.close()
             return
         controller = self
+
+    def check_origin(self, origin: str) -> bool:
+        return True
 
     def on_message(self, message):
         global device
@@ -58,6 +61,10 @@ class DeviceHandler(tornado.websocket.WebSocketHandler):
         global device
         if device == self:
             device = None
+
+
+controller: Optional[ControllerHandler] = None
+device: Optional[DeviceHandler] = None
 
 
 application = tornado.web.Application([
