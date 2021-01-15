@@ -1,10 +1,11 @@
 import { createContext, FC, PropsWithChildren, useContext } from "react";
-import { Observable, of, Subject } from "rxjs";
-import { map, mergeMap, switchMap } from "rxjs/operators";
+import { BehaviorSubject, Observable, of, Subject } from "rxjs";
+import { filter, map, mergeMap, switchMap } from "rxjs/operators";
 import { OwOServer } from "./api/OwOServer";
+
 export type APIContextData = {
   server$: Observable<OwOServer | null>;
-  connect(password: string): void;
+  connect: (password: string) => void;
 };
 const APIContext = createContext({} as APIContextData);
 
@@ -13,22 +14,27 @@ export const useServer = () => useContext(APIContext);
 export type APIProviderProps = PropsWithChildren<{ endpoint: string }>;
 
 export const APIProvider: FC<APIProviderProps> = ({ children, endpoint }) => {
-  const server$ = new Subject<OwOServer | null>();
+  const serverObj$ = new BehaviorSubject<OwOServer | null>(null);
 
   const connect = (password: string) => {
-    server$.next(new OwOServer(password, endpoint));
+    serverObj$.next(new OwOServer(password, endpoint));
   };
 
-  const connectedServer$ = server$.pipe(
-    switchMap((server) => {
-      if (server == null) return of(false);
-      return server.connected$;
-    }),
-    switchMap((connected) => (connected ? server$ : of(null)))
+  const server$ = serverObj$.pipe(
+    switchMap((server) =>
+      server
+        ? server.isReady$.pipe(map((state) => (state ? server : null)))
+        : of(null)
+    )
   );
 
   return (
-    <APIContext.Provider value={{ server$: connectedServer$, connect }}>
+    <APIContext.Provider
+      value={{
+        server$,
+        connect,
+      }}
+    >
       {children}
     </APIContext.Provider>
   );
