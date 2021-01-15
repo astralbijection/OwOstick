@@ -19,31 +19,32 @@ async fn ensure_singleton_client(
     }
 }
 
+fn set_client(client: SingleClient, ws: warp::ws::Ws) -> impl warp::Reply {
+    let client = client.clone();
+    ws.on_upgrade(|socket: warp::ws::WebSocket| async move {
+        *client.lock().unwrap() = Some(Client { socket });
+    })
+}
+
+fn handle_singleton_ws_client(
+    client: SingleClient,
+) -> warp::filters::BoxedFilter<(impl warp::Reply,)> {
+    let c1 = client.clone();
+    warp::any()
+        .and_then(move || ensure_singleton_client(client.clone()))
+        .and(warp::ws())
+        .map(move |_, ws: warp::ws::Ws| set_client(c1.clone(), ws))
+        .boxed()
+}
+
 #[tokio::main]
 async fn main() {
     let controller: SingleClient = Arc::new(Mutex::new(None));
     let target: SingleClient = Arc::new(Mutex::new(None));
 
-    let c1 = controller.clone();
-    let controller_path = warp::path("controller")
-        .and_then(move || ensure_singleton_client(controller.clone()))
-        .and(warp::ws())
-        .map(move |_, ws: warp::ws::Ws| {
-            let controller = c1.clone();
-            ws.on_upgrade(|socket: warp::ws::WebSocket| async move {
-                *controller.lock().unwrap() = Some(Client { socket });
-            })
-        });
+    let controller_path = warp::path("controller").and(handle_singleton_ws_client(controller));
 
-    let target_path = warp::path("target")
-        .and_then(move || ensure_singleton_client(target.clone()))
-        .and(warp::ws())
-        .map(|_, ws: warp::ws::Ws| {
-            ws.on_upgrade(|socket: warp::ws::WebSocket| {
-                let (tx, rx) = socket.split();
-                rx.forward(tx).map(|_| {})
-            })
-        });
+    let target_path = warp::path("target").and(handle_singleton_ws_client(target));
 
     warp::serve(warp::path("api").and(controller_path.or(target_path)))
         .run(([0, 0, 0, 0], 3030))
