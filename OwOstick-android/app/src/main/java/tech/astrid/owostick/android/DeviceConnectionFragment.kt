@@ -10,11 +10,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import tech.astrid.owostick.android.databinding.FragmentDeviceConnectionBinding
-import tech.astrid.owostick.android.databinding.FragmentServerConnectionBinding
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -41,37 +41,37 @@ class DeviceConnectionFragment : Fragment() {
 
         with (binding) {
             connectToDeviceButton.setOnClickListener {
-                when (val stateObj = state.value) {
-                    is ConnectingState.Disconnected -> {
+                when (val stateObj = _state.value) {
+                    is State.Disconnected -> {
                         val connector = deviceList.selectedItem as DeviceConnector
                         Log.i(tag, "Connecting")
 
-                        state.onNext(ConnectingState.Connecting(connector))
+                        _state.onNext(State.Connecting(connector))
 
                         lifecycleScope.launch(Dispatchers.IO) {
-                            state.onNext(ConnectingState.Connected(connector.connect()))
+                            _state.onNext(State.Connected(connector.connect()))
                             Log.i(tag, "Connected")
                         }
                     }
-                    is ConnectingState.Connected -> {
+                    is State.Connected -> {
                         stateObj.connection.sendValue(0.0f)
                         stateObj.connection.close()
-                        state.onNext(ConnectingState.Disconnected)
+                        _state.onNext(State.Disconnected)
                     }
-                    is ConnectingState.Connecting -> {
+                    is State.Connecting -> {
                         throw IllegalStateException("Button cannot be clicked while still connecting!")
                     }
                 }
             }
 
-            state.subscribe {
+            _state.subscribe {
                 requireActivity().runOnUiThread {
-                    deviceList.isEnabled = it is ConnectingState.Disconnected
-                    connectToDeviceButton.isEnabled = it !is ConnectingState.Connecting
+                    deviceList.isEnabled = it is State.Disconnected
+                    connectToDeviceButton.isEnabled = it !is State.Connecting
                     connectToDeviceButton.text = when (it) {
-                        is ConnectingState.Disconnected -> "Connect"
-                        is ConnectingState.Connecting -> "Connecting..."
-                        is ConnectingState.Connected -> "Disconnect"
+                        is State.Disconnected -> "Connect"
+                        is State.Connecting -> "Connecting..."
+                        is State.Connected -> "Disconnect"
                     }
                 }
             }
@@ -98,12 +98,13 @@ class DeviceConnectionFragment : Fragment() {
     }
 
     private lateinit var binding: FragmentDeviceConnectionBinding
-    private val state = BehaviorSubject.createDefault<ConnectingState>(ConnectingState.Disconnected)
+    private val _state = BehaviorSubject.createDefault<State>(State.Disconnected)
+    val state: Observable<State> get() = _state
 
-    sealed class ConnectingState {
-        object Disconnected : ConnectingState()
-        data class Connecting(val connector: DeviceConnector) : ConnectingState()
-        data class Connected(val connection: DeviceConnection) : ConnectingState()
+    sealed class State {
+        object Disconnected : State()
+        data class Connecting(val connector: DeviceConnector) : State()
+        data class Connected(val connection: DeviceConnection) : State()
     }
 
     companion object {
