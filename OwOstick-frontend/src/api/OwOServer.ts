@@ -5,7 +5,14 @@ import {
   Observer,
   Subject,
 } from "rxjs";
-import { combineAll, distinctUntilChanged, filter, map } from "rxjs/operators";
+import {
+  combineAll,
+  distinctUntilChanged,
+  filter,
+  map,
+  throttle,
+  throttleTime,
+} from "rxjs/operators";
 
 type Action<T = any> = T & { type: string };
 type Event<T = any> = T & { type: string };
@@ -30,6 +37,7 @@ export class OwOServer {
 
   private readonly state$: BehaviorSubject<State>;
   private readonly message$: Subject<Event>;
+  private readonly inputPower$: Subject<number>;
 
   get subjectState(): Observable<boolean> {
     return this.destinationConnected$;
@@ -60,6 +68,19 @@ export class OwOServer {
       map(({ state }) => state === "authenticated"),
       distinctUntilChanged()
     );
+
+    this.inputPower$ = new Subject();
+    const inputMessages$ = this.inputPower$.pipe(
+      throttleTime(100),
+      map(
+        (power) =>
+          ({
+            action: "set_power",
+            value: power,
+          } as Action)
+      )
+    );
+    inputMessages$.subscribe((msg) => this.send(msg));
 
     // Authentication success
     messages
@@ -96,10 +117,7 @@ export class OwOServer {
   }
 
   sendPower(power: number) {
-    this.send({
-      action: "set_power",
-      value: power,
-    });
+    this.inputPower$.next(power);
   }
 
   close() {
