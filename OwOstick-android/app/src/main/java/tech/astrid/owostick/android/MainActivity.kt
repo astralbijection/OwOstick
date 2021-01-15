@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.jakewharton.rxbinding4.view.clicks
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
@@ -20,7 +19,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        connectButton.setOnClickListener {
+        connectToDeviceButton.setOnClickListener {
             when (val stateObj = state.value) {
                 is ConnectingState.Disconnected -> {
                     val connector = deviceList.selectedItem as DeviceConnector
@@ -54,8 +53,8 @@ class MainActivity : AppCompatActivity() {
         state.subscribe {
             runOnUiThread {
                 deviceList.isEnabled = it is ConnectingState.Disconnected
-                connectButton.isEnabled = it !is ConnectingState.Connecting
-                connectButton.text = when (it) {
+                connectToDeviceButton.isEnabled = it !is ConnectingState.Connecting
+                connectToDeviceButton.text = when (it) {
                     is ConnectingState.Disconnected -> "Connect"
                     is ConnectingState.Connecting -> "Connecting..."
                     is ConnectingState.Connected -> "Disconnect"

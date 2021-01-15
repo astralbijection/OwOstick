@@ -8,7 +8,7 @@
 
     <tech.astrid.owostick.android.view.BigSlider
         android:id="@+id/powerSlider"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/configuration"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -16,24 +16,61 @@
         android:layout_height="400dp"/>
 
     <LinearLayout
-        app:layout_constraintTop_toBottomOf="@id/powerSlider"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-        <Spinner
-            android:id="@+id/deviceList"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            tools:listitem="Test" />
-
-        <Button
-            android:id="@+id/connectButton"
+        android:id="@+id/configuration"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        android:orientation="vertical">
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:drawableStart="@drawable/ic_baseline_power_24"
-            tools:text="Connect"/>
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="Device"/>
+            <Spinner
+                android:id="@+id/deviceList"
+                android:layout_width="175dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                tools:listitem="Test" />
+
+            <Button
+                android:id="@+id/connectToDeviceButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:drawableLeft="@drawable/ic_baseline_power_24"
+                tools:text="Connect"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="Server"/>
+            <EditText
+                android:id="@+id/serverHost"
+                android:hint="Host"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"/>
+            <EditText
+                android:id="@+id/password"
+                android:hint="Password"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"/>
+
+            <Button
+                android:id="@+id/connectToServer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:drawableLeft="@drawable/ic_baseline_power_24"
+                tools:text="Connect"/>
+        </LinearLayout>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
