@@ -1,11 +1,7 @@
-import React, { useState } from "react";
-import Container from "@material-ui/core/Container";
-import Typography from "@material-ui/core/Typography";
+import { Button, Input } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
-import Link from "@material-ui/core/Link";
-import { Button, Input, Slider } from "@material-ui/core";
-import { OwOServer } from "./api/OwOServer";
-import APIProvider, { useServer } from "./APIProvider";
+import React, { useState } from "react";
+import { useServer } from "./APIProvider";
 
 const ConnectionForm = () => {
   const { connect } = useServer();

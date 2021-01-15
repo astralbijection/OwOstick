@@ -1,12 +1,10 @@
-import React from "react";
-import Container from "@material-ui/core/Container";
-import Typography from "@material-ui/core/Typography";
+import { InputLabel } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
-import Link from "@material-ui/core/Link";
-import { Button, Input, Slider } from "@material-ui/core";
-import { OwOServer } from "./api/OwOServer";
+import Container from "@material-ui/core/Container";
+import React from "react";
 import APIProvider from "./APIProvider";
 import ConnectionForm from "./ConnectionForm";
+import PowerSlider from "./PowerSlider";
 
 export default function App() {
   return (
@@ -14,7 +12,8 @@ export default function App() {
       <Container maxWidth="sm">
         <ConnectionForm />
         <Box my={4}>
-          <Slider />
+          <InputLabel>Power</InputLabel>
+          <PowerSlider />
         </Box>
       </Container>
     </APIProvider>

@@ -39,13 +39,19 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
             auth_state = obj.get('value') == PASSWORD
             logger.info("Authentication state=%s", auth_state)
             self.send_obj({'type': 'authentication', 'value': auth_state})
-            if not auth_state:
+            if auth_state:
+                self.state = 'authenticated'
+            else:
                 self.close()
             return
 
+        if self.state != 'authenticated':
+            logger.warning("Unauthenticated user")
+            return
         global device
         if device is None:
             return
+
         if action == 'set_power':
             value = float(obj.get('value'))
             logger.debug("Received set power command value=%s", value)

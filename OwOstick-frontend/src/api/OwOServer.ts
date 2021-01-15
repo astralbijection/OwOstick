@@ -91,6 +91,7 @@ export class OwOServer {
   }
 
   private send(obj: Action) {
+    console.debug("Sending object", obj);
     this.socket.send(JSON.stringify(obj));
   }
 
