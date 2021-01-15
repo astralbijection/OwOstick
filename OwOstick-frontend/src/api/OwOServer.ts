@@ -40,7 +40,8 @@ export class OwOServer {
     this.state$ = new BehaviorSubject<State>({ state: "disconnected" });
 
     // Socket events
-    this.socket.onopen = (ev) => {
+    this.socket.onopen = () => {
+      console.log("Socket opened, sending authentication request");
       this.state$.next({ state: "unauthenticated" });
       this.send({ type: "authenticate", value: this.password });
     };
@@ -70,8 +71,10 @@ export class OwOServer {
       )
       .subscribe(([{ value }]) => {
         if (value) {
+          console.log("Authentication success");
           this.state$.next({ state: "authenticated" });
         } else {
+          console.error("Authentication failure");
           this.close();
         }
       });

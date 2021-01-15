@@ -8,8 +8,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+PASSWORD = 'test'
+
 
 class ControllerHandler(tornado.websocket.WebSocketHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.state = 'disconnected'
+
     def open(self):
         global controller
         logger.info("Controller connected: %s", self)
@@ -18,18 +24,28 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
             self.close()
             return
         controller = self
+        self.state = 'unauthenticated'
 
     def check_origin(self, origin: str) -> bool:
         return True
 
     def on_message(self, message):
-        global device
-        if device is None:
-            return
         logger.info("Got message: %s", message)
         obj = json.loads(message)
         logger.debug("Decoded message to object: %s", obj)
-        action = obj.get('action')
+
+        action = obj.get('type')
+        if action == 'authenticate':
+            auth_state = obj.get('value') == PASSWORD
+            logger.info("Authentication state=%s", auth_state)
+            self.send_obj({'type': 'authentication', 'value': auth_state})
+            if not auth_state:
+                self.close()
+            return
+
+        global device
+        if device is None:
+            return
         if action == 'set_power':
             value = float(obj.get('value'))
             logger.debug("Received set power command value=%s", value)
@@ -39,6 +55,9 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
         global controller
         if controller == self:
             controller = None
+
+    def send_obj(self, data):
+        self.write_message(json.dumps(data))
 
 
 class DeviceHandler(tornado.websocket.WebSocketHandler):
