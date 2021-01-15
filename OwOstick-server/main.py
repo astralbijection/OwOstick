@@ -57,7 +57,8 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
             logger.debug("Received set power command value=%s", value)
             device.set_power(value)
 
-    def on_close(self):
+    def on_connection_close(self) -> None:
+        logger.info("Cleaning up %s", self)
         global controller
         if controller == self:
             controller = None
