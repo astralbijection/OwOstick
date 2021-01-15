@@ -76,7 +76,7 @@ export class OwOServer {
       map(
         (power) =>
           ({
-            action: "set_power",
+            type: "set_power",
             value: power,
           } as Action)
       )

@@ -1,20 +1,51 @@
-from typing import Optional
+from typing import Optional, Awaitable
 
-import tornado
+import tornado.httpserver
+import tornado.ioloop
 import tornado.websocket
 import json
 import logging
+from rx.subject import Subject
+from tornado.websocket import WebSocketHandler
 
+from handler import AuthenticatedSingletonSocketHandler
 
 logger = logging.getLogger(__name__)
 
 PASSWORD = 'test'
 
 
-class ControllerHandler(tornado.websocket.WebSocketHandler):
+class ControllerHandler(AuthenticatedSingletonSocketHandler):
+    @property
+    def instance(self) -> Optional[WebSocketHandler]:
+        global controller
+        return controller
+
+    @instance.setter
+    def instance(self, value: Optional[WebSocketHandler]):
+        global controller
+        controller = value
+
+    def verify_password(self, password) -> bool:
+        return password == 'test'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.state = 'disconnected'
+
+        def message_observer(message):
+            if not self.authenticated:
+                logger.warning("Unauthenticated user")
+                return
+            global device
+            if device is None:
+                return
+
+            action = message.get('type')
+            if action == 'set_power':
+                value = float(message.get('value'))
+                logger.debug("Received set power command value=%s", value)
+                device.power.on_next(value)
+        self.messages.subscribe(message_observer)
 
     def open(self):
         global controller
@@ -29,47 +60,29 @@ class ControllerHandler(tornado.websocket.WebSocketHandler):
     def check_origin(self, origin: str) -> bool:
         return True
 
-    def on_message(self, message):
-        logger.info("Got message: %s", message)
-        obj = json.loads(message)
-        logger.debug("Decoded message to object: %s", obj)
 
-        action = obj.get('type')
-        if action == 'authenticate':
-            auth_state = obj.get('value') == PASSWORD
-            logger.info("Authentication state=%s", auth_state)
-            self.send_obj({'type': 'authentication', 'value': auth_state})
-            if auth_state:
-                self.state = 'authenticated'
-            else:
-                self.close()
-            return
+class DeviceHandler(AuthenticatedSingletonSocketHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-        if self.state != 'authenticated':
-            logger.warning("Unauthenticated user")
-            return
+        self.power = Subject()
+
+        def power_observable(power):
+            self.send_obj({'type': 'power', 'value': power})
+        self.power.subscribe(power_observable)
+
+    def verify_password(self, password) -> bool:
+        pass
+
+    @property
+    def instance(self) -> Optional[WebSocketHandler]:
         global device
-        if device is None:
-            return
+        return device
 
-        if action == 'set_power':
-            value = float(obj.get('value'))
-            logger.debug("Received set power command value=%s", value)
-            device.set_power(value)
-
-    def on_connection_close(self) -> None:
-        logger.info("Cleaning up %s", self)
-        global controller
-        if controller == self:
-            controller = None
-
-    def send_obj(self, data):
-        self.write_message(json.dumps(data))
-
-
-class DeviceHandler(tornado.websocket.WebSocketHandler):
-    def set_power(self, value):
-        self.write_message(json.dumps({'action': 'set_power', 'value': value}))
+    @instance.setter
+    def instance(self, value: Optional[WebSocketHandler]):
+        global device
+        device = value
 
     def open(self):
         global device
@@ -100,7 +113,10 @@ application = tornado.web.Application([
 
 
 if __name__ == "__main__":
-    logger.setLevel(logging.DEBUG)
+    loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+    for logger in loggers:
+        logger.setLevel(logging.INFO)
+
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.listen(8888)
     tornado.ioloop.IOLoop.instance().start()
