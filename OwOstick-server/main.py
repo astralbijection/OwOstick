@@ -29,7 +29,7 @@ class ControllerHandler(AuthenticatedSingletonSocketHandler):
         controller = value
 
     def verify_password(self, password) -> bool:
-        return password == 'test'
+        return password == PASSWORD
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -64,7 +64,7 @@ class DeviceHandler(AuthenticatedSingletonSocketHandler):
         self.power.subscribe(power_observable)
 
     def verify_password(self, password) -> bool:
-        return password == 'test'
+        return password == PASSWORD
 
     @property
     def instance(self) -> Optional[WebSocketHandler]:
@@ -99,5 +99,5 @@ if __name__ == "__main__":
 
     logger.info("Starting server")
     http_server = tornado.httpserver.HTTPServer(application)
-    http_server.listen(6969)
+    http_server.listen(6970)
     tornado.ioloop.IOLoop.instance().start()
