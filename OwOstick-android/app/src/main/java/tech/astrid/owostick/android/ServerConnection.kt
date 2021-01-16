@@ -27,7 +27,7 @@ class ServerConnection(val uri: URI, val password: String) : WebSocketClient(uri
             .filter { it is Event.SetPower }
             .map { (it as Event.SetPower).value }
 
-    private val _state = BehaviorSubject.createDefault<State>(State.Disconnected)
+    private val _state = BehaviorSubject.createDefault<State>(State.Connecting)
     val state get(): Observable<State> = _state
 
     init {
@@ -69,14 +69,15 @@ class ServerConnection(val uri: URI, val password: String) : WebSocketClient(uri
 
     sealed class State {
         object Disconnected : State()
+        object Connecting : State()
         object Unauthenticated : State()
         object Authenticated : State()
     }
 
     @TypeFor(field = "type", adapter = Event.Adapter::class)
-    sealed class Event {
-        data class SetPower(val value: Float) : Event()
-        data class Authentication(val success: Boolean) : Event()
+    sealed class Event(val type: String) {
+        data class SetPower(val value: Float) : Event("set_power")
+        data class Authentication(val success: Boolean) : Event("authentication")
 
         class Adapter : TypeAdapter<Event> {
             override fun classFor(type: Any): KClass<out Event> = when (type) {
@@ -88,8 +89,8 @@ class ServerConnection(val uri: URI, val password: String) : WebSocketClient(uri
     }
 
     @TypeFor(field = "type", adapter = Action.Adapter::class)
-    sealed class Action {
-        data class Authenticate(val value: String) : Action()
+    sealed class Action(val type: String) {
+        data class Authenticate(val value: String) : Action("authenticate")
 
         class Adapter : TypeAdapter<Action> {
             override fun classFor(type: Any): KClass<out Action> = when (type) {

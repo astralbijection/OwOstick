@@ -1,7 +1,6 @@
 package tech.astrid.owostick.android
 
 import android.os.Bundle
-import android.os.Debug
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -66,18 +65,32 @@ class ServerConnectionFragment : Fragment() {
                     ),
                     { _, b -> b }
                 )
+                .filter { (_, _, state) -> state is State.Disconnected }
                 .subscribe { (host, pass, state) ->
                     Log.i(
                         logTag,
                         "Connecting to server with host=${host} pass=${pass} state=${state}"
                     )
-                    if (state is State.Disconnected) {
-                        val uri = URI("ws://$host/api/device")
-                        val client = ServerConnection(uri, pass.toString())
-                        _state.onNext(State.Connecting(client))
+                    val uri = URI("ws://$host/api/device")
+                    val client = ServerConnection(uri, pass.toString())
+                    client.state.subscribe {
+                        if (it is ServerConnection.State.Disconnected) {
+                            _state.onNext(State.Disconnected)
+                        }
                     }
+                    _state.onNext(State.Connecting(client))
                 }
 
+            state.subscribe {
+                requireActivity().runOnUiThread {
+                    connectToServer.isEnabled = it !is State.Connecting
+                    connectToServer.text = when (it) {
+                        is State.Disconnected -> "Connect"
+                        is State.Connecting -> "Connecting..."
+                        is State.Connected -> "Disconnect"
+                    }
+                }
+            }
         }
     }
 

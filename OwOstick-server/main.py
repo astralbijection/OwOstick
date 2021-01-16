@@ -72,7 +72,7 @@ class DeviceHandler(AuthenticatedSingletonSocketHandler):
         self.power.subscribe(power_observable)
 
     def verify_password(self, password) -> bool:
-        pass
+        return password == 'test'
 
     @property
     def instance(self) -> Optional[WebSocketHandler]:
