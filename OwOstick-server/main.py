@@ -1,3 +1,4 @@
+import os
 from typing import Optional, Awaitable
 
 import tornado.httpserver
@@ -12,7 +13,8 @@ from handler import AuthenticatedSingletonSocketHandler
 
 logger = logging.getLogger(__name__)
 
-PASSWORD = 'test'
+PASSWORD = os.getenv('PASSWORD')
+assert PASSWORD is not None, "Did not provide a password!"
 
 
 class ControllerHandler(AuthenticatedSingletonSocketHandler):
@@ -95,6 +97,7 @@ if __name__ == "__main__":
     for logger in loggers:
         logger.setLevel(logging.INFO)
 
+    logger.info("Starting server")
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.listen(6969)
     tornado.ioloop.IOLoop.instance().start()

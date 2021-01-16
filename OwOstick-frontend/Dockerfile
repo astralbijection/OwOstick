@@ -1,6 +1,6 @@
 FROM node:14-alpine AS builder
 WORKDIR /app
-ENV NODE_ENV=production REACT_APP_HOST=api.astrid.tech:6969
+ENV NODE_ENV=production REACT_APP_HOST=api.astrid.tech:6970
 
 COPY package.json yarn.lock ./
 RUN yarn install

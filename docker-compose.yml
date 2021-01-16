@@ -1,0 +1,14 @@
+version: "3.7"
+services:
+  server:
+    image: owo-server
+    build: OwOstick-server
+    ports:
+      - 6970:6970
+    environment:
+      - "PASSWORD=heresapassword"
+  frontend:
+    image: owo-frontend
+    build: OwOstick-frontend
+    ports:
+      - 6969:80
