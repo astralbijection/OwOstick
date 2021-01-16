@@ -1,8 +1,8 @@
 import { createContext, FC, PropsWithChildren, useContext } from "react";
-import { BehaviorSubject, Observable, of, Subject } from "rxjs";
-import { filter, map, mergeMap, switchMap } from "rxjs/operators";
-import { OwOServer } from "./api/OwOServer";
+import { BehaviorSubject, of } from "rxjs";
 import { useObservable } from "rxjs-hooks";
+import { map, mergeMap } from "rxjs/operators";
+import { OwOServer } from "./api/OwOServer";
 
 export type APIContextData = {
   server: OwOServer | null;
