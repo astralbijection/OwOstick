@@ -10,9 +10,6 @@ import com.jakewharton.rxbinding4.widget.textChanges
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.kotlin.Observables.combineLatest
 import io.reactivex.rxjava3.subjects.BehaviorSubject
-import io.reactivex.rxjava3.subjects.Subject
-import org.java_websocket.client.WebSocketClient
-import tech.astrid.owostick.android.databinding.FragmentDeviceConnectionBinding
 import tech.astrid.owostick.android.databinding.FragmentServerConnectionBinding
 import java.net.URI
 
@@ -22,6 +19,25 @@ class ServerConnectionFragment : Fragment() {
     private val _state = BehaviorSubject.createDefault<State>(
         State.Disconnected
     )
+    private val connection = _state
+        .switchMap { state ->
+            when (state) {
+                is State.Disconnected -> Observable.just(null)
+                is State.Connecting -> Observable.just(null)
+                is State.Connected -> state.connection.state.map {
+                    if (it is ServerConnection.State.Authenticated)
+                        state.connection
+                    else
+                        null
+                }
+            }
+        }
+        .distinctUntilChanged()
+
+    val power: Observable<Float> = connection
+        .filter { it != null }
+        .switchMap { it!!.power }
+
     val state: Observable<State> get() = _state
 
     override fun onCreateView(
