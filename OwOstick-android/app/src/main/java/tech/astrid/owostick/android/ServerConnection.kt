@@ -1,5 +1,6 @@
 package tech.astrid.owostick.android
 
+import android.util.Log
 import com.beust.klaxon.Klaxon
 import com.beust.klaxon.TypeAdapter
 import com.beust.klaxon.TypeFor
@@ -14,6 +15,11 @@ import java.net.URI
 import kotlin.reflect.KClass
 
 class ServerConnection(val uri: URI, val password: String) : WebSocketClient(uri) {
+    private val logTag = ServerConnection::class.qualifiedName!!
+    init {
+        Log.i(logTag, "Connecting to server uri=${uri}")
+        connect()
+    }
     private val klaxon = Klaxon()
     private val messages: Subject<Event> = PublishSubject.create()
     val power: Observable<Float>
@@ -43,11 +49,13 @@ class ServerConnection(val uri: URI, val password: String) : WebSocketClient(uri
     }
 
     override fun onOpen(handshakedata: ServerHandshake?) {
+        Log.i(logTag, "Opened")
         _state.onNext(State.Unauthenticated)
         send(Action.Authenticate(password))
     }
 
     override fun onMessage(message: String?) {
+        Log.v(logTag, "Got message msg=${message}")
         messages.onNext(klaxon.parse<Event>(message!!))
     }
 
@@ -56,6 +64,7 @@ class ServerConnection(val uri: URI, val password: String) : WebSocketClient(uri
     }
 
     override fun onError(ex: Exception?) {
+        Log.e(logTag, "Error", ex)
     }
 
     sealed class State {

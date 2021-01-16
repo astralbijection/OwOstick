@@ -84,18 +84,6 @@ class DeviceHandler(AuthenticatedSingletonSocketHandler):
         global device
         device = value
 
-    def open(self):
-        global device
-        if device is not None:
-            self.close()
-        device = self
-        self.write_message("Hello World")
-
-    def on_message(self, message):
-        global controller
-        if controller is None:
-            return
-
     def on_close(self):
         global device
         if device == self:
