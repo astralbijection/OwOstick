@@ -37,7 +37,7 @@ class ServerConnection(val uri: URI, val password: String) : WebSocketClient(uri
         )
             .subscribe { (ev, _) ->
                 ev as Event.Authentication
-                if (ev.success)
+                if (ev.value)
                     _state.onNext(State.Authenticated)
                 else
                     close()
@@ -65,6 +65,7 @@ class ServerConnection(val uri: URI, val password: String) : WebSocketClient(uri
 
     override fun onError(ex: Exception?) {
         Log.e(logTag, "Error", ex)
+        close()
     }
 
     sealed class State {
@@ -77,7 +78,7 @@ class ServerConnection(val uri: URI, val password: String) : WebSocketClient(uri
     @TypeFor(field = "type", adapter = Event.Adapter::class)
     sealed class Event(val type: String) {
         data class SetPower(val value: Float) : Event("set_power")
-        data class Authentication(val success: Boolean) : Event("authentication")
+        data class Authentication(val value: Boolean) : Event("authentication")
 
         class Adapter : TypeAdapter<Event> {
             override fun classFor(type: Any): KClass<out Event> = when (type) {

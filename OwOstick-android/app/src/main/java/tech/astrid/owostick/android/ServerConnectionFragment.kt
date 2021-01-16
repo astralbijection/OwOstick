@@ -19,24 +19,23 @@ class ServerConnectionFragment : Fragment() {
     private lateinit var binding: FragmentServerConnectionBinding
     private val logTag = ServerConnectionFragment::class.qualifiedName!!
 
-    private val _state = BehaviorSubject.createDefault<State>(
-        State.Disconnected
-    )
+    private val connection =
+        BehaviorSubject.createDefault<Optional<ServerConnection>>(Optional.empty())
 
-    private val connection = _state
-        .switchMap { state ->
-            when (state) {
-                is State.Disconnected -> Observable.just(Optional.empty<ServerConnection>())
-                is State.Connecting -> Observable.just(Optional.empty<ServerConnection>())
-                is State.Connected -> state.connection.state.map {
-                    if (it is ServerConnection.State.Authenticated)
-                        Optional.of(state.connection)
-                    else
-                        Optional.empty<ServerConnection>()
-                }
-            }
+    private val _state = connection
+        .switchMap { opt ->
+            opt.map { sc ->
+                sc.state
+                    .map {
+                        when (it) {
+                            ServerConnection.State.Unauthenticated,
+                            ServerConnection.State.Connecting -> State.Connecting(sc)
+                            is ServerConnection.State.Authenticated -> State.Connected(sc)
+                            is ServerConnection.State.Disconnected -> State.Disconnected
+                        }
+                    }
+            }.orElse(Observable.just(State.Disconnected))
         }
-        .distinctUntilChanged()
 
     val power: Observable<Float> = connection
         .filter { it.isPresent }
@@ -73,12 +72,7 @@ class ServerConnectionFragment : Fragment() {
                     )
                     val uri = URI("ws://$host/api/device")
                     val client = ServerConnection(uri, pass.toString())
-                    client.state.subscribe {
-                        if (it is ServerConnection.State.Disconnected) {
-                            _state.onNext(State.Disconnected)
-                        }
-                    }
-                    _state.onNext(State.Connecting(client))
+                    connection.onNext(Optional.of(client))
                 }
 
             state.subscribe {
