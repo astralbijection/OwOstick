@@ -24,13 +24,13 @@
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/deviceFragmentContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:name="tech.astrid.owostick.android.DeviceConnectionFragment" />
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/serverFragmentContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:name="tech.astrid.owostick.android.ServerConnectionFragment" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

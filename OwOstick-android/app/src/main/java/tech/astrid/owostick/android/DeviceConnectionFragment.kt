@@ -15,12 +15,15 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import tech.astrid.owostick.android.databinding.FragmentDeviceConnectionBinding
+import java.util.*
+import kotlin.concurrent.thread
 
 
 class DeviceConnectionFragment : Fragment() {
     private lateinit var binding: FragmentDeviceConnectionBinding
     private val _state = BehaviorSubject.createDefault<State>(State.Disconnected)
     val state: Observable<State> get() = _state
+    private val logTag = DeviceConnectionFragment::class.qualifiedName
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,16 +42,19 @@ class DeviceConnectionFragment : Fragment() {
                 when (val stateObj = _state.value) {
                     is State.Disconnected -> {
                         val connector = deviceList.selectedItem as DeviceConnector
-                        Log.i(tag, "Connecting")
+                        Log.i(logTag, "Connecting")
 
                         _state.onNext(State.Connecting(connector))
 
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            _state.onNext(State.Connected(connector.connect()))
-                            Log.i(tag, "Connected")
+                        thread {
+                            val data = State.Connected(connector.connect())
+                            Log.d(logTag, "data: $data")
+                            _state.onNext(data)
+                            Log.i(logTag, "Connected")
                         }
                     }
                     is State.Connected -> {
+                        Log.i(logTag, "Disconnecting")
                         stateObj.connection.sendValue(0.0f)
                         stateObj.connection.close()
                         _state.onNext(State.Disconnected)
@@ -59,7 +65,7 @@ class DeviceConnectionFragment : Fragment() {
                 }
             }
 
-            _state.subscribe {
+            state.subscribe {
                 requireActivity().runOnUiThread {
                     deviceList.isEnabled = it is State.Disconnected
                     connectToDeviceButton.isEnabled = it !is State.Connecting

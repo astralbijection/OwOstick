@@ -23,7 +23,7 @@ class BigSlider : View {
             valueSubject.onNext(value)
         }
 
-    val valueSubject = BehaviorSubject.createDefault(0.0f)
+    val valueSubject = BehaviorSubject.createDefault(0.0f)!!
 
     constructor(context: Context) : super(context) {
         init(null, 0)
@@ -41,7 +41,7 @@ class BigSlider : View {
         // Load attributes
         context.obtainStyledAttributes(attrs, R.styleable.BigSlider, defStyle, 0)
                 .apply {
-                    value = getFloat(R.styleable.BigSlider_value, 0f)
+                    valueSubject.onNext(getFloat(R.styleable.BigSlider_value, 0f))
                 }.recycle()
 
         valueSubject.subscribe { invalidate() }

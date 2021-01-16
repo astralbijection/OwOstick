@@ -47,16 +47,6 @@ class ControllerHandler(AuthenticatedSingletonSocketHandler):
                 device.power.on_next(value)
         self.messages.subscribe(message_observer)
 
-    def open(self):
-        global controller
-        logger.info("Controller connected: %s", self)
-        if controller is not None:
-            logger.warn("Controller already exists! Closing.")
-            self.close()
-            return
-        controller = self
-        self.state = 'unauthenticated'
-
     def check_origin(self, origin: str) -> bool:
         return True
 
