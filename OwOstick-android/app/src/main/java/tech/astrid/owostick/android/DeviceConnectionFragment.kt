@@ -16,17 +16,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import tech.astrid.owostick.android.databinding.FragmentDeviceConnectionBinding
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [DeviceConnection.newInstance] factory method to
- * create an instance of this fragment.
- */
 class DeviceConnectionFragment : Fragment() {
+    private lateinit var binding: FragmentDeviceConnectionBinding
+    private val _state = BehaviorSubject.createDefault<State>(State.Disconnected)
+    val state: Observable<State> get() = _state
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -39,7 +34,7 @@ class DeviceConnectionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with (binding) {
+        with(binding) {
             connectToDeviceButton.setOnClickListener {
                 when (val stateObj = _state.value) {
                     is State.Disconnected -> {
@@ -92,14 +87,10 @@ class DeviceConnectionFragment : Fragment() {
         val devices: List<DeviceConnector> = pairedDevices!!.map { BluetoothDeviceConnector(it) }
 
         val arrayAdapter = DeviceAdapter(requireActivity(), devices)
-        with (binding) {
+        with(binding) {
             deviceList.adapter = arrayAdapter
         }
     }
-
-    private lateinit var binding: FragmentDeviceConnectionBinding
-    private val _state = BehaviorSubject.createDefault<State>(State.Disconnected)
-    val state: Observable<State> get() = _state
 
     sealed class State {
         object Disconnected : State()

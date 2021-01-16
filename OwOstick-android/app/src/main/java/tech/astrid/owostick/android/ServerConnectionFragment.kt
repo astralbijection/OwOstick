@@ -1,52 +1,68 @@
 package tech.astrid.owostick.android
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import com.jakewharton.rxbinding4.view.clicks
+import com.jakewharton.rxbinding4.widget.textChanges
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.kotlin.Observables.combineLatest
+import io.reactivex.rxjava3.subjects.BehaviorSubject
+import io.reactivex.rxjava3.subjects.Subject
+import org.java_websocket.client.WebSocketClient
+import tech.astrid.owostick.android.databinding.FragmentDeviceConnectionBinding
+import tech.astrid.owostick.android.databinding.FragmentServerConnectionBinding
+import java.net.URI
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ServerConnectionFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ServerConnectionFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private lateinit var binding: FragmentServerConnectionBinding
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    private val _state = BehaviorSubject.createDefault<State>(
+        State.Disconnected
+    )
+    val state: Observable<State> get() = _state
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentServerConnectionBinding.inflate(inflater)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        with(binding) {
+            connectToServer.clicks()
+                .withLatestFrom(
+                    combineLatest(
+                        serverHost.textChanges(),
+                        password.textChanges(),
+                        state
+                    ),
+                    { _, b -> b }
+                )
+                .subscribe { (host, pass, state) ->
+                    if (state is State.Disconnected) {
+                        val uri = URI("ws://$host/api/device")
+                        val client = ServerConnection(uri, pass.toString())
+                        _state.onNext(State.Connecting(client))
+                    }
+                }
+
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_server_connection, container, false)
+    sealed class State {
+        object Disconnected : State()
+        data class Connecting(val connection: ServerConnection) : State()
+        data class Connected(val connection: ServerConnection) : State()
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ServerConnectionFragment.
-         */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance() = ServerConnectionFragment()
     }

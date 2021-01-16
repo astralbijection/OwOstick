@@ -2,7 +2,10 @@ package tech.astrid.owostick.android
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.kotlin.Observables.combineLatest
+import io.reactivex.rxjava3.kotlin.mergeAll
+import io.reactivex.rxjava3.kotlin.switchLatest
 import tech.astrid.owostick.android.databinding.ActivityMainBinding
 import java.util.concurrent.TimeUnit
 
@@ -24,15 +27,20 @@ class MainActivity : AppCompatActivity() {
             .add(R.id.serverFragmentContainer, serverFragment)
             .commit()
 
-        with(binding) {
-            combineLatest(deviceFragment.state, powerSlider.valueSubject)
-                .filter { (state, _) -> state is DeviceConnectionFragment.State.Connected }
+        val inputSources: Observable<Observable<Float>> =
+            Observable.just(binding.powerSlider.valueSubject)
+
+        val inputSource = inputSources.switchLatest()
+
+        combineLatest(
+            deviceFragment.state, inputSource
                 .throttleLast(100L, TimeUnit.MILLISECONDS)
-                .subscribe { (state, value) ->
-                    (state as DeviceConnectionFragment.State.Connected).connection.sendValue(
-                        value
-                    )
-                }
-        }
+        )
+            .filter { (state, _) -> state is DeviceConnectionFragment.State.Connected }
+            .subscribe { (state, value) ->
+                (state as DeviceConnectionFragment.State.Connected).connection.sendValue(
+                    value
+                )
+            }
     }
 }
