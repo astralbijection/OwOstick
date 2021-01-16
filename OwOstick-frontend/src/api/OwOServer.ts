@@ -1,4 +1,5 @@
 import {
+  asyncScheduler,
   BehaviorSubject,
   combineLatest,
   Observable,
@@ -72,7 +73,7 @@ export class OwOServer {
     this.inputPower$ = new Subject();
     const inputMessages$ = this.inputPower$.pipe(
       distinctUntilChanged(),
-      throttleTime(100),
+      throttleTime(100, asyncScheduler, { leading: false, trailing: true }),
       map(
         (power) =>
           ({

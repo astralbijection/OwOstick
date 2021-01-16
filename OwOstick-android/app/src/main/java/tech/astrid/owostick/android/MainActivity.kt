@@ -26,9 +26,9 @@ class MainActivity : AppCompatActivity() {
 
         val inputSource = serverFragment.state.switchMap {
             if (it is ServerConnectionFragment.State.Connected) {
-                binding.powerSlider.valueSubject
-            } else {
                 serverFragment.power
+            } else {
+                binding.powerSlider.valueSubject
             }
         }
 

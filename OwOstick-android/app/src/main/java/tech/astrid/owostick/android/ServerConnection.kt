@@ -25,7 +25,10 @@ class ServerConnection(val uri: URI, val password: String) : WebSocketClient(uri
     val power: Observable<Float>
         get() = messages
             .filter { it is Event.SetPower }
-            .map { (it as Event.SetPower).value }
+            .map {
+                Log.d(logTag, "got power event $it")
+                (it as Event.SetPower).value
+            }
 
     private val _state = BehaviorSubject.createDefault<State>(State.Connecting)
     val state get(): Observable<State> = _state
@@ -56,7 +59,9 @@ class ServerConnection(val uri: URI, val password: String) : WebSocketClient(uri
 
     override fun onMessage(message: String?) {
         Log.v(logTag, "Got message msg=${message}")
-        messages.onNext(klaxon.parse<Event>(message!!))
+        val event = klaxon.parse<Event>(message!!)
+        Log.d(logTag, "Got event event=${event}")
+        messages.onNext(event)
     }
 
     override fun onClose(code: Int, reason: String?, remote: Boolean) {
@@ -77,12 +82,12 @@ class ServerConnection(val uri: URI, val password: String) : WebSocketClient(uri
 
     @TypeFor(field = "type", adapter = Event.Adapter::class)
     sealed class Event(val type: String) {
-        data class SetPower(val value: Float) : Event("set_power")
+        data class SetPower(val value: Float) : Event("power")
         data class Authentication(val value: Boolean) : Event("authentication")
 
         class Adapter : TypeAdapter<Event> {
             override fun classFor(type: Any): KClass<out Event> = when (type) {
-                "set_power" -> SetPower::class
+                "power" -> SetPower::class
                 "authentication" -> Authentication::class
                 else -> throw IllegalArgumentException("Unknown type $type")
             }
